@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true,
-        minLenght:6
+        minLength:6
     },
     email:{
         type:String,
@@ -76,22 +76,35 @@ userSchema.pre("save", async function(next){
 //compare the password 
 userSchema.methods.comparePassword = async function(password){
     console.log("compare data :",this);
-    
+    // const pass = this;
+
     return bycrpt.compare(password, this.password);
 }
 
 // this is an instance menthod(methods) for jwt i.e. json web token
 userSchema.methods.generateToken = async function () {
     try {
-        return jwt.sign({
-            userId : this._id.toString(),
-            email : this.email
-        },
-    process.env.JWT_SECRET_KEY,{
-        expiresIn : "30d",
-    } )
+        return jwt.sign(
+                {
+                    userId : this._id.toString(),
+                    email:this.email,  //payload
+                },
+                //secret_key
+                process.env.JWT_SECRET_KEY,
+                {expiresIn:"30d"}
+            )
+
+            //store the token in the cookie
+            // res.cookie("jwt", token,{
+            //     maxAge:30*24*60*60*1000,//30 days
+            //     httpOnly:true, //prevet js access to the cookies
+            //     sameSite: "strict", //prevent CSRF
+            //     secure: process.env.NODE_ENV !== "development" ,// https in porduction
+
+            // })
+        // return token;
     } catch (error) {
-        console.error("Error:",error);
+        console.error("Error generating token:",error);
         
     }
 }
