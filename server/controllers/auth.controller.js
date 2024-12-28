@@ -28,7 +28,7 @@ export const signup = async (req,res)=>{
                 message:"Regstration Completed!", 
             } )
          }
-    return res.status(404).json({success:true,error:"Error creating the User!"})
+    return res.status(404).json({success:false,error:"Error creating the User!"})
    } catch (error) {
     console.log("Error",error);
     
@@ -74,7 +74,7 @@ export const login = async(req,res)=>{
             });
           }
       
-             res.status(401).json({message:"Invalid Email or Password"})
+             res.status(401).json({success:false,message:"Invalid Email or Password"})
     } catch (error) {
         console.error("Error:",error);
         res.status(500).json({success:false,message:error.message})
@@ -95,4 +95,12 @@ export const logout = async (req,res)=>{
         res.status(500).json({success:false,message:"Failed to logout"})
         
     }
+}
+
+export const getProfile = async (req,res)=>{
+    res.status(200).json({
+        success: true,
+        message: "Profile data",
+        user: req.user, // The user info will be available if the JWT is valid
+      });
 }

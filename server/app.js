@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
+import cookieParser from "cookie-parser";
 
 const createApp = () => {
 
@@ -8,6 +9,9 @@ const createApp = () => {
    
     //Middleware parser 
     app.use(express.json())
+    
+    //cookie parser
+    app.use(cookieParser());
 
     //it is used for api fecthing 
     app.use("/api/auth",authRoutes);

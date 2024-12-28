@@ -1,6 +1,5 @@
 import {z} from "zod";
 
-
  export const UserSchema = z.object({
     username: z
     .string({required_error:"Username can't be empty!"})
@@ -15,7 +14,7 @@ import {z} from "zod";
     .trim(),
     email:z.string().
     email("Invalid email format")
-    .toLowerCase(),
+    .toLowerCase().trim(),
     password:z
     .string({required_error:"Password is required!"})
     .min(6,"Password must be at least 6 characters")
@@ -34,3 +33,15 @@ import {z} from "zod";
     .optional()
 })
 
+// Login Schema (for login validation)
+export const loginSchema = z.object({
+    email: z.string().email("Invalid email format").toLowerCase().trim(),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(20, { message: "Password must not exceed 20 characters" })
+      .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+      .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+      .regex(/[0-9]/, { message: "Password must contain at least one digit" })
+      .regex(/[@$!%*?&]/, { message: "Password must contain at least one special character" }),
+  });
