@@ -107,28 +107,75 @@ export const likePost = async (req, res) => {
   try {
     const post = await Post.findById(postId);
 
-    if (!post)
-      return res.status(StatusCodes.NOT_FOUND).json({ error: "Not Found" });
+    if (!post) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Post not found" });
+    }
 
     const userLikedPost = post.likes.includes(userId);
 
     if (!userLikedPost) {
-      // like post
+      // Like post
       post.likes.push(userId);
-      await User.updateOne({_id:userId},{$push:{likedPosts:postId}})
-      await post.save();
-      const notfication = new Notification({
+
+      const userUpdatePromise = User.updateOne(
+        { _id: userId },
+        { $push: { likedPosts: postId } }
+      );
+      const notificationPromise = Notification.create({
         from: userId,
         to: post.user,
         type: "like",
       });
-      await notfication.save();
+
+      await Promise.all([userUpdatePromise, post.save(), notificationPromise]);
+
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: "Post liked successfully" });
     } else {
-      // unlike post
-      await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
-      await User.updateOne({_id:userId},{$pull:{likedPosts:postId}})
-      res.status(StatusCodes.OK).json({ message: "Post unliked successfully" });
+      // Unlike post
+      const postUpdatePromise = Post.updateOne(
+        { _id: postId },
+        { $pull: { likes: userId } }
+      );
+      const userUpdatePromise = User.updateOne(
+        { _id: userId },
+        { $pull: { likedPosts: postId } }
+      );
+
+      await Promise.all([postUpdatePromise, userUpdatePromise]);
+
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: "Post unliked successfully" });
     }
+  } catch (error) {
+    console.error("Error liking/unliking post:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+export const getAllRoutes = async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({
+        path: "comments.user",
+        select: "-password",
+      });
+
+    if (posts.length == 0) {
+      return res.status(StatusCodes.OK).json([]);
+    }
+    res.status(StatusCodes.OK).json(posts);
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -136,98 +183,92 @@ export const likePost = async (req, res) => {
   }
 };
 
-export const getAllRoutes = async ( req, res )=>{
+export const getLikedPosts = async (req, res) => {
+  const userId = req.params.id;
 
-    try {
-        const posts = await Post.find().sort({createdAt:-1}).populate({
-            path:"user",
-            select:"-password"
-        })
-        .populate({
-            path:"comments.user",
-            select:"-password"
-        })
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found!" });
+    }
 
-        if(posts.length == 0 ){
-            return res.status(StatusCodes.OK).json([])
-        }
-        res.status(StatusCodes.OK).json(posts);
+    if (!user.likedPosts || user.likedPosts.length === 0) {
+      return res.status(StatusCodes.OK).json([]); // Return an empty array if no liked posts
+    }
 
-    } catch (error) {
-        res
+    const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({
+        path: "comments.user",
+        select: "-password",
+      });
+
+    res.status(StatusCodes.OK).json(likedPosts);
+  } catch (error) {
+    res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Interal Server Error" });
-    }
-}
+      .json({ message: "Internal Server Error" });
+  }
+};
 
-export const getLikedPosts = async ( req, res) =>{
-    const userId = req.params.id;
-    try {
-        const user = await User.findById(userId);
-        if(!user) return res.status(StatusCodes.NOT_FOUND).json({message:"User not found!"}  )
-        
-        const likedPosts = await Post.find({_id:{$in:user.likedPosts}}).populate({
-            path:"user",
-            select:"-password"
-        })
-        .populate({
-            posts:"comments.user",
-            select:"-password"
-        });
+export const getFollowingPosts = async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const user = await User.findById(userId);
 
-        res.status(StatusCodes.OK).json(likePost);
-    } catch (error) {
-        res
+    if (!user)
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not Found!" });
+
+    const following = user.following;
+
+    const followingPosts = await Post.find({ user: { $in: following } })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({
+        path: "comments.user",
+        select: "-password",
+      });
+
+    res.status(StatusCodes.OK).json(followingPosts);
+  } catch (error) {
+    res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Interal Server Error" });
+      .json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUserPosts = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found." });
     }
-}
 
-export const getFollowingPosts = async ( req, res) => {
-    const userId = req.user.userId;
-    try {
-        const user = await User.findById(userId);
+    const posts = await Post.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .populate({ path: "user", select: "-password" })
+      .populate({ path: "comments.user", select: "-password" });
 
-        if(!user) return res.status(StatusCodes.NOT_FOUND).json({message:"User not Found!"});
-
-        const following = user.following;
-
-        const followingPosts = await Post.find({user:{$in:following}}).sort({createdAt:-1})
-        .populate({
-            path:"user",
-            select:"-password"
-        })
-        .populate({
-            path:"comments.user",
-            select:"-password"
-        })
-        
-        res.status(StatusCodes.OK).json(followingPosts);
-    } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"Internal Server Error"})
+    if (!posts.length) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "No posts found for this user." });
     }
-}
 
-export const getUserPosts = async ( req, res ) =>{
-    const {username} = req.params;
-    try {
-        const user = await User.findOne({username})
-        if(!user) return res.status(StatusCodes.NOT_FOUND).json({message:"User Not Found"});
-
-        const posts = (await Post.find({user : user.userId})).sort({createdAt:-1})
-        .populate({
-            path:"user",
-            select:"-password"
-        })
-        .populate({
-            path:"comments.user",
-            select:"-password"
-        })
-
-        res.status(StatusCodes.OK).json(posts)
-    } catch (error) {
-        res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Interal Server Error" });
-    }
-}
+    res.status(StatusCodes.OK).json(posts);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
+  }
+};
