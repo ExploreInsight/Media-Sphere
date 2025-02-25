@@ -5,11 +5,18 @@ import postRoutes from './routes/post.routes.js';
 import notificationRoutes from './routes/notification.routes.js'
 import { errorHandler } from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
+import cors from 'cors';
 
 const createApp = () => {
 
     const app = express();
    
+    // Enabling cors for port sharing 
+    app.use(cors({
+        origin: "http://localhost:5173", // frontend URL
+        credentials: true, // Allow cookies to be sent
+      }));  
+
     //Middleware parser 
     app.use(express.json())
    
