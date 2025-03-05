@@ -152,7 +152,7 @@ const SignUp = () => {
                 className="w-full py-3 px-6 bg-primary hover:bg-primary-focus rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
                 disabled={isPending}
               >
-                {isPending ? "Loading..." : "Sign Up"}
+                {isPending ? "Please Wait..." : "Sign Up"}
               </button>
             </form>
 

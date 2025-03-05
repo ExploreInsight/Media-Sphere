@@ -1,53 +1,114 @@
-import { FaRegComment, FaRegHeart, FaTrash } from "react-icons/fa";
-import { useState } from "react";
+import { FaRegComment, FaRegHeart, FaTrash, FaRegBookmark } from "react-icons/fa";
+import { BiRepost } from "react-icons/bi";
 import { Link } from "react-router-dom";
-import { POSTS } from "../../utilis/db/dummy.js";
 
-const Post = () => {
-  return (
-    <div className="max-w-2xl mx-auto p-4">
-      {POSTS.map((post) => (
-        <PostCard key={post._id} post={post} />
-      ))}
-    </div>
-  );
-};
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import { useState } from "react";
+import useAuthUser from "../../hooks/useAuthUser.js";
+import toast from "react-hot-toast";
+import LoadingSpinner from "./LoadingSpinner.jsx";
+import axios from "axios";
 
-const PostCard = ({ post }) => {
-  const [likes, setLikes] = useState(post.likes.length);
-  const [isLiked, setIsLiked] = useState(false);
+const Post = ({ post }) => {
+ 
+  const [comment , setComment] = useState('');
+  const {data: authUser} = useAuthUser();
+  const queryClient  = useQueryClient();
 
-  const handleLike = () => {
-    setLikes(isLiked ? likes - 1 : likes + 1);
-    setIsLiked(!isLiked);
+  const {mutate:deletePost , isPending} = useMutation({
+    mutationFn: async () =>{
+      try {
+        const res = await axios.delete(`/api/post/${post._id}`);
+        if(!res.data){
+          throw new Error("Something went wrong!")
+        }
+        return res.data
+      } catch (error) {
+        throw new Error("Something went wrong! Please try again.")
+      }
+    },
+    onSuccess:()=>{
+      toast.success("Post Deleted Successfully!");
+
+      // invalidate the cache to refetch the post after successful deletion 
+      queryClient.invalidateQueries(['posts']);
+    }
+  })
+
+
+  const isMyPost = authUser.user._id === post.user._id; 
+
+  const formattedDate = '1h'; 
+  const isLiked = false;
+  const isCommenting = false;
+
+  
+  const handleDeletePost = () =>{
+    deletePost();
   };
+  const handlePostComment = (e) =>{e.preventDefault();};
+  const handleLikePost = () => {};
 
   return (
-    <div className="bg-slate-900 text-white p-4 rounded-lg mb-4 shadow-md">
-      <div className="flex items-center gap-3">
-        <img src={post.user.profileImg} alt="avatar" className="w-10 h-10 rounded-full" />
-        <div>
-          <Link to={`/profile/${post.user.username}`} className="font-bold">
+    <div className='flex gap-2 items-start p-4 border-b border-gray-900'>
+      <div className='avatar'>
+        <Link to={`/profile/${post.user.username}`} className='w-8 rounded-full overflow-hidden'>
+          <img src={post.user.profileImg || "/avatar-placeholder.png"} alt="profile" />
+        </Link>
+      </div>
+      <div className='flex flex-col flex-1'>
+        <div className='flex gap-2 items-center'>
+          <Link to={`/profile/${post.user.username}`} className='font-bold'>
             {post.user.fullName}
           </Link>
-          <p className="text-gray-400 text-sm">@{post.user.username}</p>
+          <span className='text-gray-700 flex gap-1 text-sm'>
+            <Link to={`/profile/${post.user.username}`}>@{post.user.username}</Link>
+            <span>·</span>
+            <span>{formattedDate}</span>
+          </span>
+          {isMyPost && (
+            <span className='flex justify-end flex-1'>
+              {!isPending && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
+              {isPending && <LoadingSpinner size="sm" />}
+            </span>
+          )}
         </div>
-      </div>
-      <p className="mt-3">{post.text}</p>
-      {post.img && <img src={post.img} alt="post" className="mt-3 w-full rounded-lg" />}
-
-      <div className="flex justify-between items-center mt-3 text-gray-400">
-        <button onClick={handleLike} className="flex items-center gap-1">
-          <FaRegHeart className={isLiked ? "text-red-500" : "text-gray-400"} />
-          <span>{likes}</span>
-        </button>
-        <button className="flex items-center gap-1">
-          <FaRegComment />
-          <span>{post.comments.length}</span>
-        </button>
-        <button className="flex items-center gap-1 hover:text-red-600">
-          <FaTrash />
-        </button>
+        <div className='flex flex-col gap-3 overflow-hidden'>
+          <span>{post.text}</span>
+          {post.img && (
+            <img
+              src={post.img}
+              className='h-80 object-contain rounded-lg border border-gray-700'
+              alt='post content'
+            />
+          )}
+        </div>
+        <div className='flex justify-between mt-3'>
+          <div className='flex gap-4 items-center w-2/3 justify-between'>
+            <div className='flex gap-1 items-center cursor-pointer group'>
+              <FaRegComment className='w-4 h-4 text-slate-500 group-hover:text-sky-400' />
+              <span className='text-sm text-slate-500 group-hover:text-sky-400'>
+                {post.comments.length}
+              </span>
+            </div>
+            
+            <div className='flex gap-1 items-center group cursor-pointer'>
+              <BiRepost className='w-6 h-6 text-slate-500 group-hover:text-green-500' />
+              <span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
+            </div>
+            
+            <div className='flex gap-1 items-center group cursor-pointer'>
+              <FaRegHeart className={`w-4 h-4 ${isLiked ? 'text-pink-600' : 'text-slate-500'} group-hover:text-pink-600`} />
+              <span className={`text-sm ${isLiked ? 'text-pink-600' : 'text-slate-500'} group-hover:text-pink-600`}>
+                {post.likes.length}
+              </span>
+            </div>
+          </div>
+          
+          <div className='flex w-1/3 justify-end gap-2 items-center'>
+            <FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -10,7 +10,9 @@ import useAuthUser from "./hooks/useAuthUser";
 const Login = lazy(() => import("./pages/auth/login/Login"));
 const SignUp = lazy(() => import("./pages/auth/signup/SignUp"));
 const Home = lazy(() => import("./pages/home/Home"));
-const NotificationPage = lazy(() => import("./pages/notification/NotificationPage"));
+const NotificationPage = lazy(() =>
+  import("./pages/notification/NotificationPage")
+);
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 
 function App() {
@@ -28,13 +30,36 @@ function App() {
     <>
       <div className="flex max-w-6xl mx-auto">
         {authUser && <SideBar />}
-        <Suspense fallback={<div className="text-center">Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center h-screen">
+              <LoadingSpinner size="lg" />
+            </div>
+          }
+        >
           <Routes>
-            <Route path="/" element={authUser ? <Home /> : <Navigate to="/login" />} />
-            <Route path="/login" element={!authUser ? <Login /> : <Navigate to="/" />} />
-            <Route path="/signup" element={!authUser ? <SignUp /> : <Navigate to="/" />} />
-            <Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to="/login" />} />
-            <Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+            <Route
+              path="/"
+              element={authUser ? <Home /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/login"
+              element={!authUser ? <Login /> : <Navigate to="/" />}
+            />
+            <Route
+              path="/signup"
+              element={!authUser ? <SignUp /> : <Navigate to="/" />}
+            />
+            <Route
+              path="/notifications"
+              element={
+                authUser ? <NotificationPage /> : <Navigate to="/login" />
+              }
+            />
+            <Route
+              path="/profile/:username"
+              element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+            />
           </Routes>
         </Suspense>
         {authUser && <RightPanel />}

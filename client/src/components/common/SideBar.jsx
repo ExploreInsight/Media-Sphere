@@ -101,7 +101,7 @@ const SideBar = () => {
                 <p className="text-slate-500 text-sm">@{authUser?.user.username}</p>
               </div>
               <BiLogOut
-                className="w-5 h-5 cursor-pointer"
+                className="w-5 h-5 cursor-pointer "
                 onClick={(e) => {
                   e.preventDefault();
                   logout();
