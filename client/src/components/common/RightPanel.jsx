@@ -1,13 +1,27 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skeletons/RightPandelSkeleton.jsx";
-import {USERS_FOR_RIGHT_PANEL} from '../../utilis/db/dummy.js'
-// Mock states for loading and pending follow requests
-const isLoading = false ;
-const isPending = false;
+import {useQuery} from '@tanstack/react-query';
+import LoadingSpinnner from '../common/LoadingSpinner.jsx';
+import axios from "axios";
 
 const RightPanel = () => {
-  // Temporary variable to simulate fetched data
-  const suggestedUsers = USERS_FOR_RIGHT_PANEL;
+ const {data:suggestedUsers , isLoading , isPending} = useQuery({
+  queryKey: ['suggestedUsers'],
+  queryFn : async () =>{
+    try {
+      const res = await axios.get('/api/user/suggested');
+
+      if(!res.data){
+        throw new Error('No suggested users found');
+      }
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+ })
+
+ if(suggestedUsers?.length === 0 ) return <div className="md:w-34 w-0"></div>
 
   return (
     <div className="hidden lg:block my-4 mx-2">
@@ -37,7 +51,7 @@ const RightPanel = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-semibold tracking-tight truncate w-28">
-                      {user.fullName}
+                      {user.fullname}
                     </span>
                     <span className="text-sm text-slate-500">@{user.username}</span>
                   </div>
@@ -50,7 +64,7 @@ const RightPanel = () => {
                       // follow(user._id);
                     }}
                   >
-                    {isPending ? <LoadingSpinner size="sm" /> : "Follow"}
+                    {isPending ? <LoadingSpinnner size="sm" /> : "Follow"}
                   </button>
                 </div>
               </Link>

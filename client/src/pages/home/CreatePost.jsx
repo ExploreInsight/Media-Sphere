@@ -14,8 +14,6 @@ const CreatePost = () => {
 
   const {data:authUser} = useAuthUser();
 
-  console.log("authUser", authUser)
-
   const queryClient = useQueryClient();
 
   const {mutate:createPost, isPending , isError , error} = useMutation({
