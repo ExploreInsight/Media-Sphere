@@ -18,7 +18,7 @@ const createApp = () => {
       }));  
 
     //Middleware parser 
-    app.use(express.json())
+    app.use(express.json({limit:"5mb"})); // limit is set to 5mb for image upload deafult is 100kb 
    
     //cookie parser
     app.use(cookieParser());
