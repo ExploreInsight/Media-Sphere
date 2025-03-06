@@ -2,6 +2,7 @@ import cloudinary from "../config/cloudinary.js";
 import Notification from "../models/notfication.model.js";
 import User from "../models/user.model.js";
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 
 export const getUserProfile = async (req, res) => {
   const { username } = req.params;
@@ -89,7 +90,7 @@ export const followAndUnfollowUser = async (req, res) => {
 
 export const getSuggestedUser = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = new mongoose.Types.ObjectId(req.user.userId); // converting the userId to objectID so it matches in the aggerate pipeline 
 
     const usersFollowing = await User.findById(userId).select("following");
 

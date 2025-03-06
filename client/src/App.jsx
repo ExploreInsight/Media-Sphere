@@ -4,7 +4,7 @@ import SideBar from "./components/common/SideBar";
 import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./components/common/LoadingSpinner";
-import useAuthUser from "./hooks/useAuthUser";
+import useAuthUser from "./hooks/useAuthUser.jsx";
 
 // Lazy-loaded pages
 const Login = lazy(() => import("./pages/auth/login/Login"));
