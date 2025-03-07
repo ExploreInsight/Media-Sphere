@@ -21,7 +21,7 @@ const RightPanel = () => {
     }
   }
  })
- console.log("suggested USer", suggestedUsers)
+
  const {follow, isPending} = useFollow();
 
  if(suggestedUsers?.length === 0 ) return <div className="md:w-34 w-0"></div>
