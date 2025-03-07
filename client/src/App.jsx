@@ -5,6 +5,7 @@ import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 import useAuthUser from "./hooks/useAuthUser.jsx";
+import InternetStatus from "./components/InternetStatus.jsx";
 
 // Lazy-loaded pages
 const Login = lazy(() => import("./pages/auth/login/Login"));
@@ -28,42 +29,48 @@ function App() {
 
   return (
     <>
+      <InternetStatus />
+      <Toaster /> 
+
       <div className="flex max-w-6xl mx-auto">
         {authUser && <SideBar />}
-        <Suspense
-          fallback={
-            <div className="flex justify-center items-center h-screen">
-              <LoadingSpinner size="lg" />
-            </div>
-          }
-        >
-          <Routes>
-            <Route
-              path="/"
-              element={authUser ? <Home /> : <Navigate to="/login" />}
-            />
-            <Route
-              path="/login"
-              element={!authUser ? <Login /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/signup"
-              element={!authUser ? <SignUp /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/notifications"
-              element={
-                authUser ? <NotificationPage /> : <Navigate to="/login" />
-              }
-            />
-            <Route
-              path="/profile/:username"
-              element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
-            />
-          </Routes>
-        </Suspense>
+        
+        <main className="flex-grow"> 
+          <Suspense
+            fallback={
+              <div className="flex justify-center items-center h-screen">
+                <LoadingSpinner size="lg" />
+              </div>
+            }
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={authUser ? <Home /> : <Navigate to="/login" />}
+              />
+              <Route
+                path="/login"
+                element={!authUser ? <Login /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/signup"
+                element={!authUser ? <SignUp /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/notifications"
+                element={
+                  authUser ? <NotificationPage /> : <Navigate to="/login" />
+                }
+              />
+              <Route
+                path="/profile/:username"
+                element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+              />
+            </Routes>
+          </Suspense>
+        </main>
+
         {authUser && <RightPanel />}
-        <Toaster />
       </div>
     </>
   );
