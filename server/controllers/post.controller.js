@@ -123,17 +123,18 @@ export const likePost = async (req, res) => {
         { _id: userId },
         { $push: { likedPosts: postId } }
       );
-      const notificationPromise = Notification.create({
-        from: userId,
-        to: post.user,
-        type: "like",
-      });
+      const notificationPromise = Notification.findOneAndUpdate({
+        from: userId, to: post.user, type: "like", },
+        {$setOnInsert: {  from: userId, to: post.user, type: "like",}},
+        { upsert:true, new : true}, // updates docs if exits, else inserts new one 
+      );
 
       await Promise.all([userUpdatePromise, post.save(), notificationPromise]);
 
+     
       return res
         .status(StatusCodes.OK)
-        .json({ message: "Post liked successfully" });
+        .json({ updatedLikes:post.likes, message: "Post liked successfully" });
     } else {
       // Unlike post
       const postUpdatePromise = Post.updateOne(
@@ -147,9 +148,10 @@ export const likePost = async (req, res) => {
 
       await Promise.all([postUpdatePromise, userUpdatePromise]);
 
+      const updatedLikes = post.likes.filter((id) => id.toString() !== userId.toString());
       return res
         .status(StatusCodes.OK)
-        .json({ message: "Post unliked successfully" });
+        .json({ updatedLikes, message: "Post unliked successfully" });
     }
   } catch (error) {
     console.error("Error liking/unliking post:", error);
