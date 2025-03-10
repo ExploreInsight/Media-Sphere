@@ -16,6 +16,10 @@ const getPostApi = () => {
       return "/api/post/all";
     case "following":
       return "/api/post/following";
+    case "posts":
+      return `/api/post/user/${username}`;
+    case "likes":
+      return `/api/post/likedPost/${userId}`;
     default:
       return "/api/post/all"; 
   }

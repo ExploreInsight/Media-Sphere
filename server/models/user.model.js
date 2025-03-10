@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
     },
     bio: {
       type: String,
-      default: ",",
+      default: "Enjoying life is best way to live",
     },
     link: {
       type: String,
