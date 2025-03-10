@@ -13,6 +13,6 @@ const router = express.Router();
 router.get("/v1/profile/:username", authenticate, getUserProfile);
 router.get("/suggested", authenticate, getSuggestedUser);
 router.post("/follow/:userId", authenticate, followAndUnfollowUser);
-router.post("/update", authenticate, validate(UpdateUserSchema), updateProfile);
+router.put("/update", authenticate, validate(UpdateUserSchema), updateProfile);
 
 export default router;

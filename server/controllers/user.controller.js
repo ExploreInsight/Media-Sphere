@@ -123,6 +123,7 @@ export const getSuggestedUser = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+  console.log("data",req.body)
   const { username, fullname, email, bio, link, currentPass, newPass, profileImg, coverImg } = req.body;
   const userId = req.user.userId;
 

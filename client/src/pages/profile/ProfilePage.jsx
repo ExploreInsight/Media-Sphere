@@ -18,6 +18,9 @@ import axios from "axios";
 import useAuthUser from "../../hooks/useAuthUser.jsx";
 import useFollow from "../../hooks/useFollow.jsx";
 
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile.jsx";
+
+
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
@@ -53,30 +56,52 @@ const ProfilePage = () => {
     },
   });
 
-  useEffect(() => {
-    refetch();
-  }, [username, refetch]);
+//  const {mutate:updateProfile , isPending:isUpdatingProfile} = useMutation({
+//     mutationFn: async (data)=>{
+//         try {
+//             const res = await axios.put(`/api/user/update`,{data});
+//             if(!res.data) throw new Error(" Something went Wrong!");
+//             return res.data
+            
+//         } catch (error) {
+//             throw new Error(error);
+            
+//         }
+//     },
+//     onSuccess:()=>{
+//         toast.success("Profile updated successfully!");
+//         Promise.all([
+//             queryClinet.invalidateQueries(['authProfile']),
+//             queryClinet.invalidateQueries(['userProfile'])
+//         ])
+//     },
+//     onError: (error) =>{
+//         toast.error(error.message);
+//     }
+//  })
+  const {updateProfile , isUpdatingProfile} = useUpdateUserProfile();
 
   const isMyProfile = authUser.user._id === user?._id;
   // const isMyProfile = true;
   const memberSinceDate = user ? formatPostDate(user?.createdAt) : "";
   const amIFollowing = authUser?.user?.following.includes(user?._id);
 
-  const handleImgChange = (e, state) => {
+  const handleImgChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        state === "coverImg" && setCoverImg(reader.result);
-        state === "profileImg" && setProfileImg(reader.result);
-        console.log(
-          state === "coverImg" ? "Cover Image updated" : "Profile Image updated"
-        );
+        if (type === "coverImg") setCoverImg(reader.result);
+        else if (type === "profileImg") setProfileImg(reader.result);
+        console.log(`${type} updated`);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  useEffect(() => {
+    refetch();
+  }, [username, refetch]);
   return (
     <>
       <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen ">
@@ -165,7 +190,7 @@ const ProfilePage = () => {
                 {(coverImg || profileImg) && (
                   <button
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
-                    onClick={async () => {
+                    onClick={ async () => {
                       await updateProfile({ coverImg, profileImg });
                       setProfileImg(null);
                       setCoverImg(null);
@@ -191,7 +216,7 @@ const ProfilePage = () => {
                       <>
                         <FaLink className="w-3 h-3 text-slate-500" />
                         <a
-                          href="https://youtube.com/@Learn_To_Your_Best"
+                          href={user?.link}
                           target="_blank"
                           rel="noreferrer"
                           className="text-sm text-blue-500 hover:underline"

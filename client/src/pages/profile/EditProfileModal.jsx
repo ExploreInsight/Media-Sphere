@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+
 
 const EditProfileModal = ({ authUser }) => {
+  
     const [formData, setFormData] = useState({
         fullname: "",
         username: "",
@@ -11,6 +14,8 @@ const EditProfileModal = ({ authUser }) => {
         currentPassword: "",
     });
 
+  const {updateProfile , isUpdatingProfile} = useUpdateUserProfile();
+    
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -18,11 +23,11 @@ const EditProfileModal = ({ authUser }) => {
     useEffect(() => {
         if (authUser) {
             setFormData({
-                fullName: authUser.fullname || "",
-                username: authUser.username || "",
-                email: authUser.email || "",
-                bio: authUser.bio || "",
-                link: authUser.link || "",
+                fullname: authUser?.user.fullname || "",
+                username: authUser?.user.username || "",
+                email: authUser?.user.email || "",
+                bio: authUser?.user.bio || "",
+                link: authUser?.user.link || "",
                 newPassword: "",
                 currentPassword: "",
             });
@@ -45,15 +50,16 @@ const EditProfileModal = ({ authUser }) => {
                         onSubmit={(e) => {
                             e.preventDefault();
                             // Update profile function goes here
+                            updateProfile({formData});
                         }}
                     >
                         <div className="flex flex-wrap gap-2">
                             <input
                                 type="text"
-                                placeholder="Full Name"
+                                placeholder="FullName"
                                 className="flex-1 input border border-gray-700 rounded p-2 input-md"
                                 value={formData.fullname}
-                                name="fullName"
+                                name="fullname"
                                 onChange={handleInputChange}
                             />
                             <input
@@ -109,7 +115,7 @@ const EditProfileModal = ({ authUser }) => {
                             onChange={handleInputChange}
                         />
                         <button className="btn btn-primary rounded-full btn-sm text-white">
-                            Update
+                            {isUpdatingProfile ? "Updating..." : "Update"}
                         </button>
                     </form>
                 </div>
