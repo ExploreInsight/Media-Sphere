@@ -50,7 +50,7 @@ const EditProfileModal = ({ authUser }) => {
                         onSubmit={(e) => {
                             e.preventDefault();
                             // Update profile function goes here
-                            updateProfile({formData});
+                            updateProfile(formData);
                         }}
                     >
                         <div className="flex flex-wrap gap-2">
