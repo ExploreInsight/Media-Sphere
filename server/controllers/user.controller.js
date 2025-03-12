@@ -123,11 +123,9 @@ export const getSuggestedUser = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  console.log("data:heloo",req.body)
- const {formData} = req.body;
-  const { username, fullname, email, bio, link, profileImg, coverImg } = formData;
-  const newPass = formData.newPassword;
-  const currentPass = formData.currentPassword
+
+  const { username, fullname, email, bio, link, profileImg, coverImg , newPassword , currentPassword} = req.body.formData;
+  
   console.log(fullname)
   const userId = req.user.userId;
 
@@ -139,19 +137,19 @@ export const updateProfile = async (req, res) => {
         .json({ message: "User not Found", success: false });
     }
 
-    if ((currentPass && !newPass) || (!currentPass && newPass)) {
+    if ((currentPassword && !newPassword) || (!currentPassword && newPassword)) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ success: false, message: "Please provide the current and the new password!" });
     }
-    if (currentPass && newPass) {
-      const isMatch = await user.comparePassword(currentPass);
+    if (currentPassword && newPassword) {
+      const isMatch = await user.comparePassword(currentPassword);
       if (!isMatch) {
         return res
           .status(StatusCodes.BAD_REQUEST)
           .json({ message: "Current password is wrong!", success: false });
       }
-      user.password = newPass;
+      user.password = newPassword;
     }
 
     const uploadImage = async (image, existingImage) => {
