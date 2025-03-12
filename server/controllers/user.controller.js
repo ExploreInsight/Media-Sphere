@@ -124,9 +124,8 @@ export const getSuggestedUser = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
 
-  const { username, fullname, email, bio, link, profileImg, coverImg , newPassword , currentPassword} = req.body.formData;
-  
-  console.log(fullname)
+  const { username, fullname, email, bio, link, profileImg, coverImg , newPassword , currentPassword} = req.body;
+
   const userId = req.user.userId;
 
   try {
@@ -136,12 +135,22 @@ export const updateProfile = async (req, res) => {
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "User not Found", success: false });
     }
+      // Validate newPassword if provided
+      if (newPassword) {
+        if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[@$!%*?&]/.test(newPassword)) {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character (@$!%*?&).",
+          });
+        }
+      }
 
     if ((currentPassword && !newPassword) || (!currentPassword && newPassword)) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ success: false, message: "Please provide the current and the new password!" });
     }
+   
     if (currentPassword && newPassword) {
       const isMatch = await user.comparePassword(currentPassword);
       if (!isMatch) {
@@ -181,47 +190,3 @@ export const updateProfile = async (req, res) => {
       .json({ success: false, message: "Internal Server Error" });
   }
 };
-
-// export const followAndUnfollowUser = async (req, res) => {
-//     try {
-//         const { userId } = req.params;  // The target user's ID
-//         console.log("Decoded userId from JWT:", req.user.userId);  // Log decoded userId
-
-//         // Find the user to be followed/unfollowed
-//         const newUser = await User.findById(userId);
-//         if (!newUser) {
-//             return res.status(404).json({ error: "User not found" });
-//         }
-
-//         // Find the current user (the one who is following/unfollowing)
-//         const currentUser = await User.findById(req.user.userId);  // Use req.user.userId for the current user's ID
-//         if (!currentUser) {
-//             return res.status(404).json({ error: "Current user not found" });
-//         }
-
-//         // Check if the user is trying to follow themselves
-//         if (String(userId) === String(req.user.userId)) {  // Use String() for safe comparison
-//             return res.status(400).json({ error: "You can't follow yourself!" });
-//         }
-
-//         // Check if the current user is already following the target user
-//         const isFollowing = currentUser.following.includes(userId);
-
-//         if (!isFollowing) {
-//             // Follow the user if not already following
-//             await User.findByIdAndUpdate(userId, { $push: { followers: req.user.userId } });
-//             await User.findByIdAndUpdate(req.user.userId, { $push: { following: userId } });
-
-//             return res.status(200).json({ success: true, message: "User followed successfully!" });
-//         } else {
-//             // Unfollow the user if already following
-//             await User.findByIdAndUpdate(userId, { $pull: { followers: req.user.userId } });
-//             await User.findByIdAndUpdate(req.user.userId, { $pull: { following: userId } });
-
-//             return res.status(200).json({ success: true, message: "User unfollowed successfully!" });
-//         }
-//     } catch (error) {
-//         console.log("Error in followAndUnfollowUser:", error.message);
-//         res.status(500).json({ success: false, error: error.message });
-//     }
-// };

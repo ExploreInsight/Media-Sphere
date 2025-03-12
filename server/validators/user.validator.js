@@ -61,40 +61,12 @@ export const UpdateUserSchema = z.object({
     .toLowerCase()
     .trim()
     .optional(),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(20, { message: "Password must not exceed 20 characters" })
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .regex(/[0-9]/, { message: "Password must contain at least one digit" })
-    .regex(/[@$!%*?&]/, {
-      message: "Password must contain at least one special character",
-    })
-    .optional(),
+
   bio: z
     .string()
     .max(200, { message: "Bio must not exceed 200 characters" })
     .optional(),
   link: z.string().url("Link must be a valid URL").optional(),
-  newPassword: z
-    .string({ required_error: "New Password is required!" })
-    .min(6, "Password must be at least 6 characters")
-    .max(20, { message: "Password must not exceed 20 characters" })
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .regex(/[0-9]/, { message: "Password must contain at least one digit" })
-    .regex(/[@$!%*?&]/, {
-      message: "Password must contain at least one special character",
-    })
-    .optional(),
+
 });
 

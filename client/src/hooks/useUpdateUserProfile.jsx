@@ -12,25 +12,28 @@ const useUpdateUserProfile = () => {
                 if (!res.data) throw new Error("Something went wrong!");
                 return res.data;
             } catch (error) {
-                // Handle Axios error and return response data for Zod validation errors
-                if (axios.isAxiosError(error) && error.response?.data?.errors) {
-                    throw error.response.data.errors; // Throw validation errors for onError handling
+                if (axios.isAxiosError(error)) {
+                    const errors = error.response?.data?.errors; 
+                    if (Array.isArray(errors) && errors.length > 0) {
+                        throw errors; // Throw validation errors as an array
+                    }
+                    throw new Error(error.response?.data?.message || "An unexpected error occurred.");
                 }
-                throw new Error(error.response?.data?.message || "An unexpected error occurred.");
+                throw new Error("Something went wrong!");
             }
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Profile updated successfully!");
-            Promise.all([
+            await Promise.all([
                 queryClient.invalidateQueries(["authProfile"]),
                 queryClient.invalidateQueries(["userProfile"]),
             ]);
         },
         onError: (errors) => {
             if (Array.isArray(errors) && errors.length > 0) {
-                toast.error(errors[0].message); // Show only the first validation error
+                toast.error(errors[0]?.message || "Validation failed.");
             } else {
-                toast.error(errors || "Failed to update profile.");
+                toast.error(errors?.message || "Failed to update profile.");
             }
         },
     });
@@ -38,4 +41,4 @@ const useUpdateUserProfile = () => {
     return { updateProfile, isUpdatingProfile };
 };
 
-export default useUpdateUserProfile; // ✅ Move 'export default' here
+export default useUpdateUserProfile;
