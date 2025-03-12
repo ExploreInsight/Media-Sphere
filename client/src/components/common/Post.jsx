@@ -120,15 +120,16 @@ const Post = ({ post }) => {
   return (
     <div className="flex gap-2 items-start p-4 border-b border-gray-900">
       <div className="avatar">
-        <Link
+      <div className="w-8 rounded-full overflow-hidden">
+      <Link
           to={`/profile/${post.user.username}`}
-          className="w-8 rounded-full overflow-hidden"
         >
           <img
             src={post.user.profileImg || "/avatar-placeholder.png"}
             alt="profile"
           />
         </Link>
+      </div>
       </div>
       <div className="flex flex-col flex-1">
         <div className="flex gap-2 items-center">
