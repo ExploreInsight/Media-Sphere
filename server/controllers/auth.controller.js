@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
   try {
-    console.log(req.body);
+    
     const { email, username, fullname, password } = req.body;
 
     // Check if all required fields are present
@@ -125,7 +125,7 @@ export const getProfile = async (req, res) => {
   try {
     
     const user = await User.findById(req.user.userId).select("-password");
-    console.log("user",user)
+    // console.log("user",user)
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Profile data",

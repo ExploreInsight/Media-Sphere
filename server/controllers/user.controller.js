@@ -123,8 +123,12 @@ export const getSuggestedUser = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  console.log("data",req.body)
-  const { username, fullname, email, bio, link, currentPass, newPass, profileImg, coverImg } = req.body;
+  console.log("data:heloo",req.body)
+ const {formData} = req.body;
+  const { username, fullname, email, bio, link, profileImg, coverImg } = formData;
+  const newPass = formData.newPassword;
+  const currentPass = formData.currentPassword
+  console.log(fullname)
   const userId = req.user.userId;
 
   try {
