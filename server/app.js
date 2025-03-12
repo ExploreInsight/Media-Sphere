@@ -10,7 +10,7 @@ import cors from 'cors';
 const createApp = () => {
 
     const app = express();
-   
+
     // Enabling cors for port sharing 
     app.use(cors({
         origin: "http://localhost:5173", // frontend URL
@@ -37,11 +37,6 @@ const createApp = () => {
 
     // universal error middleware 
     app.use(errorHandler);
-
-    // fallback route 
-    // app.use("*",(req,res)=>{
-    //     res.status(404).json({message:"The API you are looking for is not this one, GO FOR THE CORRECT API ROUTE!"})
-    // })
 
     return app;
 }
