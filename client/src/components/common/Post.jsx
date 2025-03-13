@@ -6,27 +6,31 @@ import {
 } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
 import { Link } from "react-router-dom";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import useAuthUser from "../../hooks/useAuthUser.jsx";
 import toast from "react-hot-toast";
-import LoadingSpinner from "./LoadingSpinner.jsx";
 import axios from "axios";
 import { formatPostDate } from "../../utilis/date/date.js";
+import LoadingSpinner from "./LoadingSpinner.jsx";
 
 const Post = ({ post }) => {
-  // console.log("post",post)
+  // console.log("Is it an array?", Array.isArray(post?.likes));
   const [comment, setComment] = useState("");
   const { data: authUser } = useAuthUser();
+  LoadingSpinner
+  console.log("Before liking:", post.likes);
+console.log("User ID:", authUser.user._id);
+
 
   const isMyPost = authUser.user._id === post.user._id;
   const formattedDate = formatPostDate(post.createdAt);
-  const isLiked = post.likes.includes(authUser.user._id);
+  // const isLiked = post?.likes?.includes(authUser.user._id);
+  const isLiked = Array.isArray(post?.likes) && post.likes.includes(authUser.user._id);
 
   const queryClient = useQueryClient();
 
-  const { mutate: deletePost, isPending: isDeleting } = useMutation({
+  const { mutate: deletePost, isLoading: isDeleting } = useMutation({
     mutationFn: async () => {
       try {
         const res = await axios.delete(`/api/post/${post._id}`);
@@ -45,9 +49,10 @@ const Post = ({ post }) => {
       queryClient.invalidateQueries(["posts"]);
     },
   });
+ 
 
   // needs some work here need to fix later for now just using the likePost Muation
-  const { mutate: likePost, isPending: isLiking } = useMutation({
+  const { mutate: likePost ,isLoading:isLiking } = useMutation({
     mutationFn: async () => {
       try {
         const res = await axios.put(`/api/post/like/${post._id}`);
@@ -56,7 +61,8 @@ const Post = ({ post }) => {
         if (!res.data) throw new Error("Something went wrong!");
         return res.data;
       } catch (error) {
-        throw new Error(error.message);
+        const errorMsg = error.response?.data?.message || "Something went wrong!";
+        throw new Error(errorMsg);
       }
     },
     onSuccess: (updatedLikes) => {
@@ -66,21 +72,28 @@ const Post = ({ post }) => {
       // queryClient.invalidateQueries(['posts'])  //this is not very good way here
 
       // instead of invalidating the whole cache we can update the cache manually
+      console.log("updated likes ",updatedLikes)
       queryClient.setQueryData(["posts"], (oldPosts) => {
+        if (!Array.isArray(oldPosts)) return oldPosts;
         return oldPosts.map((p) => {
+          console.log("posts p ",p)
           if (p._id === post._id) {
+            console.log("Before update:", p.likes.length);
+            console.log("After update:", updatedLikes.length);
             return { ...p, likes: updatedLikes };
           }
           return p;
         });
       });
+      queryClient.invalidateQueries(["posts"]);
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
+  // console.log("isLiking:", isLiking);
 
-  const { mutate: commentPost, isPending: isCommenting } = useMutation({
+  const { mutate: commentPost, isLoading: isCommenting } = useMutation({
     mutationFn: async () => {
       try {
         const res = await axios.post(`/api/post/comment/${post._id}`, {
@@ -112,10 +125,15 @@ const Post = ({ post }) => {
     if (isCommenting) return;
     commentPost();
   };
+
+//  const isLiking = isPending;
+//   console.log(isLoading)
+//   console.log("isliking",isLiking)
   const handleLikePost = () => {
     if (isLiking) return; // if already liked then return i.e stop the excection of the function ,yeah no need like again
     likePost();
   };
+  
 
   return (
     <div className="flex gap-2 items-start p-4 border-b border-gray-900">
@@ -248,19 +266,20 @@ const Post = ({ post }) => {
               className="flex gap-1 items-center group cursor-pointer"
               onClick={handleLikePost}
             >
-              {/* {isLiking && <LoadingSpinner size="sm"/>} */}
-
-              <FaRegHeart
-                className={`w-4 h-4 ${
-                  isLiked ? "text-pink-600" : "text-slate-500"
-                } group-hover:text-pink-600`}
-              />
+              {isLiking && <LoadingSpinner size="sm"/>}
+              {!isLiked && !isLiking && (
+									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
+								)}
+              {isLiked && !isLiking && (
+									<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />
+								)}
               <span
                 className={`text-sm ${
                   isLiked ? "text-pink-600" : "text-slate-500"
                 } group-hover:text-pink-600`}
               >
                 {post.likes.length}
+                {console.log(post.likes.length)}
               </span>
             </div>
           </div>

@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import cloudinary from "../config/cloudinary.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notfication.model.js";
+import mongoose from "mongoose";
 
 export const createPost = async (req, res) => {
   const { text } = req.body;
@@ -105,59 +106,50 @@ export const likePost = async (req, res) => {
   const { id: postId } = req.params;
 
   try {
-    const post = await Post.findById(postId);
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid post ID" });
+    }
 
+    const post = await Post.findById(postId);
     if (!post) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Post not found" });
+      return res.status(StatusCodes.NOT_FOUND).json({ error: "Post not found" });
     }
 
     const userLikedPost = post.likes.includes(userId);
 
     if (!userLikedPost) {
-      // Like post
       post.likes.push(userId);
 
       const userUpdatePromise = User.updateOne(
         { _id: userId },
         { $push: { likedPosts: postId } }
       );
-      const notificationPromise = Notification.findOneAndUpdate({
-        from: userId, to: post.user, type: "like", },
-        {$setOnInsert: {  from: userId, to: post.user, type: "like",}},
-        { upsert:true, new : true}, // updates docs if exits, else inserts new one 
+
+      const notificationPromise = Notification.findOneAndUpdate(
+        { from: userId, to: post.user, type: "like" },
+        { $set: { updatedAt: new Date() } }, // Updates timestamp
+        { upsert: true, new: true, setDefaultsOnInsert: true }
       );
 
-      await Promise.all([userUpdatePromise, post.save(), notificationPromise]);
+      post.save();
 
-     
-      return res
-        .status(StatusCodes.OK)
-        .json({ updatedLikes:post.likes, message: "Post liked successfully" });
+      await Promise.all([userUpdatePromise,  notificationPromise]);
+      
+      return res.status(StatusCodes.OK).json({ updatedLikes: post.likes, message: "Post liked successfully" });
     } else {
-      // Unlike post
-      const postUpdatePromise = Post.updateOne(
+      const updatedPost = await Post.findOneAndUpdate(
         { _id: postId },
-        { $pull: { likes: userId } }
-      );
-      const userUpdatePromise = User.updateOne(
-        { _id: userId },
-        { $pull: { likedPosts: postId } }
+        { $pull: { likes: userId } },
+        { new: true }
       );
 
-      await Promise.all([postUpdatePromise, userUpdatePromise]);
+      await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
 
-      const updatedLikes = post.likes.filter((id) => id.toString() !== userId.toString());
-      return res
-        .status(StatusCodes.OK)
-        .json({ updatedLikes, message: "Post unliked successfully" });
+      return res.status(StatusCodes.OK).json({ updatedLikes: updatedPost.likes, message: "Post unliked successfully" });
     }
   } catch (error) {
     console.error("Error liking/unliking post:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error", error: error.message });
   }
 };
 
