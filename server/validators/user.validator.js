@@ -5,10 +5,10 @@ export const UserSchema = z.object({
     .string({ required_error: "Username can't be empty!" })
     .min(3, { message: "UserName must be at least 3 characters long" })
     .max(20, { message: "Username must not exceed 20 characters" })
-    .regex(
-        /^[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*[a-zA-Z0-9]$/,
-        { message: "Username can only contain letters, numbers, and underscores, but must not start with a number or underscore, contain consecutive underscores, or end with an underscore." }
-      )  
+    .regex(/^[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*[a-zA-Z0-9]$/, {
+      message:
+        "Username can only contain letters, numbers, and underscores, but must not start with a number or underscore, contain consecutive underscores, or end with an underscore.",
+    })
     .trim(),
   fullname: z
     .string({ required_error: "Full Name is Needed!" })
@@ -43,10 +43,10 @@ export const UpdateUserSchema = z.object({
     .string()
     .min(3, { message: "UserName must be at least 3 characters long" })
     .max(20, { message: "Username must not exceed 20 characters" })
-    .regex(
-        /^[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*[a-zA-Z0-9]$/,
-        { message: "Username can only contain letters, numbers, and underscores, but must not start with a number or underscore, contain consecutive underscores, or end with an underscore." }
-      )  
+    .regex(/^[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*[a-zA-Z0-9]$/, {
+      message:
+        "Username can only contain letters, numbers, and underscores, but must not start with a number or underscore, contain consecutive underscores, or end with an underscore.",
+    })
     .trim()
     .optional(),
   fullname: z
@@ -67,6 +67,4 @@ export const UpdateUserSchema = z.object({
     .max(200, { message: "Bio must not exceed 200 characters" })
     .optional(),
   link: z.string().url("Link must be a valid URL").optional(),
-
 });
-

@@ -1,7 +1,6 @@
 import createApp from "./app.js";
 import connectDB from "./config/db.js";
 import loadEnvVars from "./config/env.js";
-
 const startServer = async () => {
   try {
     //load env vars

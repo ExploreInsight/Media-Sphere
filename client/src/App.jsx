@@ -30,12 +30,12 @@ function App() {
   return (
     <>
       <InternetStatus />
-      <Toaster /> 
+      <Toaster />
 
       <div className="flex max-w-6xl mx-auto">
         {authUser && <SideBar />}
-        
-        <main className="flex-grow"> 
+
+        <main className="flex-grow">
           <Suspense
             fallback={
               <div className="flex justify-center items-center h-screen">

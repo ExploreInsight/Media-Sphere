@@ -7,9 +7,6 @@ import { useEffect } from "react";
 
 const Posts = ({ feedType, username, userId }) => {
   
-//   const posts = POSTS;
-//   const isLoading = false;
-//  const isRefetching = false;
 const getPostApi = () => {
   switch (feedType) {
     case "forYou":

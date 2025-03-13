@@ -15,18 +15,14 @@ import { formatPostDate } from "../../utilis/date/date.js";
 import LoadingSpinner from "./LoadingSpinner.jsx";
 
 const Post = ({ post }) => {
-  // console.log("Is it an array?", Array.isArray(post?.likes));
   const [comment, setComment] = useState("");
   const { data: authUser } = useAuthUser();
-  LoadingSpinner
-  console.log("Before liking:", post.likes);
-console.log("User ID:", authUser.user._id);
-
 
   const isMyPost = authUser.user._id === post.user._id;
   const formattedDate = formatPostDate(post.createdAt);
   // const isLiked = post?.likes?.includes(authUser.user._id);
-  const isLiked = Array.isArray(post?.likes) && post.likes.includes(authUser.user._id);
+  const isLiked =
+    Array.isArray(post?.likes) && post.likes.includes(authUser.user._id);
 
   const queryClient = useQueryClient();
 
@@ -49,10 +45,8 @@ console.log("User ID:", authUser.user._id);
       queryClient.invalidateQueries(["posts"]);
     },
   });
- 
 
-  // needs some work here need to fix later for now just using the likePost Muation
-  const { mutate: likePost ,isLoading:isLiking } = useMutation({
+  const { mutate: likePost, isLoading: isLiking } = useMutation({
     mutationFn: async () => {
       try {
         const res = await axios.put(`/api/post/like/${post._id}`);
@@ -61,25 +55,21 @@ console.log("User ID:", authUser.user._id);
         if (!res.data) throw new Error("Something went wrong!");
         return res.data;
       } catch (error) {
-        const errorMsg = error.response?.data?.message || "Something went wrong!";
+        const errorMsg =
+          error.response?.data?.message || "Something went wrong!";
         throw new Error(errorMsg);
       }
     },
     onSuccess: (updatedLikes) => {
       // didn't use invalidate query as it refetch the cahce and its not best for the UI experience
       // as user just need a way to like in which only the likes update not the whole page
-
       // queryClient.invalidateQueries(['posts'])  //this is not very good way here
-
       // instead of invalidating the whole cache we can update the cache manually
-      console.log("updated likes ",updatedLikes)
       queryClient.setQueryData(["posts"], (oldPosts) => {
         if (!Array.isArray(oldPosts)) return oldPosts;
         return oldPosts.map((p) => {
-          console.log("posts p ",p)
+          console.log("posts p ", p);
           if (p._id === post._id) {
-            console.log("Before update:", p.likes.length);
-            console.log("After update:", updatedLikes.length);
             return { ...p, likes: updatedLikes };
           }
           return p;
@@ -91,7 +81,6 @@ console.log("User ID:", authUser.user._id);
       toast.error(error.message);
     },
   });
-  // console.log("isLiking:", isLiking);
 
   const { mutate: commentPost, isLoading: isCommenting } = useMutation({
     mutationFn: async () => {
@@ -126,28 +115,22 @@ console.log("User ID:", authUser.user._id);
     commentPost();
   };
 
-//  const isLiking = isPending;
-//   console.log(isLoading)
-//   console.log("isliking",isLiking)
   const handleLikePost = () => {
     if (isLiking) return; // if already liked then return i.e stop the excection of the function ,yeah no need like again
     likePost();
   };
-  
 
   return (
     <div className="flex gap-2 items-start p-4 border-b border-gray-900">
       <div className="avatar">
-      <div className="w-8 rounded-full overflow-hidden">
-      <Link
-          to={`/profile/${post.user.username}`}
-        >
-          <img
-            src={post.user.profileImg || "/avatar-placeholder.png"}
-            alt="profile"
-          />
-        </Link>
-      </div>
+        <div className="w-8 rounded-full overflow-hidden">
+          <Link to={`/profile/${post.user.username}`}>
+            <img
+              src={post.user.profileImg || "/avatar-placeholder.png"}
+              alt="profile"
+            />
+          </Link>
+        </div>
       </div>
       <div className="flex flex-col flex-1">
         <div className="flex gap-2 items-center">
@@ -266,13 +249,13 @@ console.log("User ID:", authUser.user._id);
               className="flex gap-1 items-center group cursor-pointer"
               onClick={handleLikePost}
             >
-              {isLiking && <LoadingSpinner size="sm"/>}
+              {isLiking && <LoadingSpinner size="sm" />}
               {!isLiked && !isLiking && (
-									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
-								)}
+                <FaRegHeart className="w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500" />
+              )}
               {isLiked && !isLiking && (
-									<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />
-								)}
+                <FaRegHeart className="w-4 h-4 cursor-pointer text-pink-500 " />
+              )}
               <span
                 className={`text-sm ${
                   isLiked ? "text-pink-600" : "text-slate-500"

@@ -84,7 +84,7 @@ userSchema.pre("save", async function (next) {
 //compare the password
 userSchema.methods.comparePassword = async function (password) {
 //   console.log("compare data :", this);
-  // const pass = this;
+
 
   return bycrpt.compare(password, this.password);
 };
@@ -102,15 +102,6 @@ userSchema.methods.generateToken = async function () {
       { expiresIn: "30d" }
     );
 
-    //store the token in the cookie
-    // res.cookie("jwt", token,{
-    //     maxAge:30*24*60*60*1000,//30 days
-    //     httpOnly:true, //prevet js access to the cookies
-    //     sameSite: "strict", //prevent CSRF
-    //     secure: process.env.NODE_ENV !== "development" ,// https in porduction
-
-    // })
-    // return token;
   } catch (error) {
     console.error("Error generating token:", error);
   }

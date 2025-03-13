@@ -13,9 +13,6 @@ export const signup = async (req, res) => {
         .json({ success: false, message: "All fields are required!" });
     }
 
-    //hash password
-    // const saltRound = 11;
-    // const hash_password = await bcrpt.hash(password,saltRound)
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -125,7 +122,7 @@ export const getProfile = async (req, res) => {
   try {
     
     const user = await User.findById(req.user.userId).select("-password");
-    // console.log("user",user)
+    
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Profile data",

@@ -25,8 +25,6 @@ const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
   const [feedType, setFeedType] = useState("posts");
-  // const [user, setUser] = useState(null);
-  // const [loading, setLoading] = useState(true);
 
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
@@ -56,33 +54,10 @@ const ProfilePage = () => {
     },
   });
 
-//  const {mutate:updateProfile , isPending:isUpdatingProfile} = useMutation({
-//     mutationFn: async (data)=>{
-//         try {
-//             const res = await axios.put(`/api/user/update`,{data});
-//             if(!res.data) throw new Error(" Something went Wrong!");
-//             return res.data
-            
-//         } catch (error) {
-//             throw new Error(error);
-            
-//         }
-//     },
-//     onSuccess:()=>{
-//         toast.success("Profile updated successfully!");
-//         Promise.all([
-//             queryClinet.invalidateQueries(['authProfile']),
-//             queryClinet.invalidateQueries(['userProfile'])
-//         ])
-//     },
-//     onError: (error) =>{
-//         toast.error(error.message);
-//     }
-//  })
   const {updateProfile , isUpdatingProfile} = useUpdateUserProfile();
 
   const isMyProfile = authUser.user._id === user?._id;
-  // const isMyProfile = true;
+  
   const memberSinceDate = user ? formatPostDate(user?.createdAt) : "";
   const amIFollowing = authUser?.user?.following.includes(user?._id);
 

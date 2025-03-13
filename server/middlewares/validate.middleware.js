@@ -16,18 +16,5 @@ export const validate = (schema) => async (req ,res, next) =>{
         }
         next(error)
 
-
-        // const msg = error.errors[0].message;
-        // console.log(msg);
-        // const status = 400
-
-        // const cusError = {
-        //     statusCode:status,
-        //     message:msg,
-        //     stack:"Error Caught"
-        // }
-        
-        // // res.status(400).json({message:msg})
-        // next(cusError)
     }
 }

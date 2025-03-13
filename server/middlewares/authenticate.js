@@ -3,9 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 export const authenticate = async (req, res, next) => {
-  // console.log("Headers received in backend:", req.headers);
-  // console.log("Cookies:", req.cookies);
-  // console.log("/Headers:", req.headers.cookie); // Debugging line
+
   //fetch the token to get the user
   
   const token = req.cookies.jwt || req.headers.authorization?.split(" ")[1];

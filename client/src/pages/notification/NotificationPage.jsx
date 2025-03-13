@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
+
 const NotificationPage = () => {
     const queryClient = useQueryClient();
 
@@ -21,8 +22,6 @@ const NotificationPage = () => {
             }
         },
     });
-
-    console.log("notifications", notifications);
 
     const { mutate: deleteNotification } = useMutation({
         mutationFn: async () => {
