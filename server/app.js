@@ -1,4 +1,5 @@
 import express from "express";
+import path from 'path'
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import postRoutes from "./routes/post.routes.js";
@@ -10,6 +11,7 @@ import cors from "cors";
 const createApp = () => {
   const app = express();
 
+  const __dirname = path.resolve();
   // Enabling cors for port sharing
   app.use(
     cors({
@@ -38,6 +40,14 @@ const createApp = () => {
 
   // universal error middleware
   app.use(errorHandler);
+
+  if(process.env.NODE_ENV === "production"){
+    app.use(express.static(path.join(__dirname,"/client/dist")));
+
+    app.get("*",(req ,res)=>{
+      res.sendFile(path.resolve(__dirname,"client","dist","index.html"));
+    })
+  }
 
   return app;
 };

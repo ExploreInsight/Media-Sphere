@@ -15,6 +15,7 @@ const startServer = async () => {
     //getting the port
     const PORT = process.env.PORT || 4050;
 
+
     app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
   } catch (error) {
     console.error("Error in server:", error);
