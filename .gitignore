@@ -23,5 +23,3 @@ yarn-error.log*
 # Ignore environment files
 .env
 
-# You can remove this line if you want to track env.js
-env.js
