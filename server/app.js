@@ -15,7 +15,7 @@ const createApp = () => {
   // Enabling cors for port sharing
   app.use(
     cors({
-      origin: "http://localhost:5173", // frontend URL
+      origin: process.env.NODE_ENV === "production" ? undefined : "http://localhost:5173", // frontend URL
       credentials: true, // Allow cookies to be sent
     })
   );

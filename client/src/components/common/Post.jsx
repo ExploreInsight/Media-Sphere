@@ -51,7 +51,6 @@ const Post = ({ post }) => {
       try {
         const res = await axios.put(`/api/post/like/${post._id}`);
 
-        console.log("Like API response:", res.data); // Debugging line
         if (!res.data) throw new Error("Something went wrong!");
         return res.data;
       } catch (error) {
@@ -68,8 +67,7 @@ const Post = ({ post }) => {
       queryClient.setQueryData(["posts"], (oldPosts) => {
         if (!Array.isArray(oldPosts)) return oldPosts;
         return oldPosts.map((p) => {
-          console.log("posts p ", p);
-          if (p._id === post._id) {
+         if (p._id === post._id) {
             return { ...p, likes: updatedLikes };
           }
           return p;
@@ -262,7 +260,6 @@ const Post = ({ post }) => {
                 } group-hover:text-pink-600`}
               >
                 {post.likes.length}
-                {console.log(post.likes.length)}
               </span>
             </div>
           </div>
