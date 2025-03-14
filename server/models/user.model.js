@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
     },
     link: {
       type: String,
-      default: "",
+      default: `https://media-sphere.com/user/${this.username}`
     },
     likedPosts:[
       {
