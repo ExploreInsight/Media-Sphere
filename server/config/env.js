@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 
 const loadEnvVars = () => {
   dotenv.config();
+  
   if (!process.env.PORT) {
     console.error("Error : PORT is not defined in .env");
     process.exit(1);
