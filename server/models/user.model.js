@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bycrpt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
@@ -46,62 +46,54 @@ const userSchema = new mongoose.Schema(
     },
     bio: {
       type: String,
-      default: "Enjoying life is best way to live",
+      default: "Enjoying life is the best way to live",
     },
     link: {
       type: String,
-      default: `https://media-sphere.com/user/${this.username}`
+      default: function () {
+        return `https://media-sphere.com/user/${this.username}`;
+      },
     },
-    likedPosts:[
+    likedPosts: [
       {
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Post",
-        default:[]
-      }
-    ]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+        default: [],
+      },
+    ],
   },
   { timestamps: true }
 );
 
-//secure the password with the bcrypt using pre method to handle stuff before we can save user
-
+// Secure the password before saving
 userSchema.pre("save", async function (next) {
-  // console.log("Data of this:",this);
-
-  const user = this;
-  if (!user.isModified("password")) return next();
+  if (!this.isModified("password")) return next();
 
   try {
-    //hash password
-    const saltRound = await bycrpt.genSalt(11);
-    user.password = await bycrpt.hash(user.password, saltRound);
+    const saltRound = await bcrypt.genSalt(11);
+    this.password = await bcrypt.hash(this.password, saltRound);
     next();
   } catch (error) {
     next(error);
   }
 });
 
-//compare the password
+// Compare the password
 userSchema.methods.comparePassword = async function (password) {
-//   console.log("compare data :", this);
-
-
-  return bycrpt.compare(password, this.password);
+  return bcrypt.compare(password, this.password);
 };
 
-// this is an instance menthod(methods) for jwt i.e. json web token
+// Generate JWT Token
 userSchema.methods.generateToken = async function () {
   try {
     return jwt.sign(
       {
         userId: this._id.toString(),
-        email: this.email, //payload
+        email: this.email,
       },
-      //secret_key
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30d" }
     );
-
   } catch (error) {
     console.error("Error generating token:", error);
   }
